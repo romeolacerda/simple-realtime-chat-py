@@ -10,6 +10,18 @@ server.listen()
 
 salas = {}
 
+def broadcast(sala, mensagem):
+    for i in salas[sala]:
+        if isinstance(mensagem, str):
+            mensagem = mensagem.encode()
+        i.send(mensagem)
+
+def sendMessage(name, sala, client):
+    while True:
+        mensagem = client.recv(1024)
+        mensagem = f"{name}: {mensagem.decode()}\n"
+        broadcast(sala, mensagem)
+
 while True:
     client, addr = server.accept()
     client.send(b'SALA')
@@ -19,5 +31,7 @@ while True:
     if sala not in salas.keys():
         salas[sala] = []
     salas[sala].append(client)
-    print(sala)
-    
+    print(f'{nome} se conectou na sala {sala}! INFO{addr}')
+    broadcast(sala, f'{nome}: Entrou na sala')
+    thread = threading.Thread(target=sendMessage, args=(nome, sala, client))
+    thread.start()
