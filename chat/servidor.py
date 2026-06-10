@@ -8,30 +8,30 @@ server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.bind((HOST, PORT))
 server.listen()
 
-salas = {}
+roooms = {}
 
-def broadcast(sala, mensagem):
-    for i in salas[sala]:
-        if isinstance(mensagem, str):
-            mensagem = mensagem.encode()
+def broadcast(room, message):
+    for i in roooms[room]:
+        if isinstance(message, str):
+            message = message.encode()
 
-        i.send(mensagem)
+        i.send(message)
 
-def enviarMensagem(nome, sala, client):
+def enviarMensagem(name, room, client):
     while True:
-        mensagem = client.recv(1024)
-        mensagem = f"{nome}: {mensagem.decode()}\n"
-        broadcast(sala, mensagem)
+        message = client.recv(1024)
+        message = f"{name}: {message.decode()}\n"
+        broadcast(room, message)
 
 while True:
     client, addr = server.accept()
     client.send(b'SALA')
-    sala = client.recv(1024).decode()
-    nome = client.recv(1024).decode()
-    if sala not in salas.keys():
-        salas[sala] = []
-    salas[sala].append(client)
-    print(f'{nome} se conectou na sala {sala}! INFO {addr}')
-    broadcast(sala, f'{nome}: Entrou na sala!\n')
-    thread = threading.Thread(target=enviarMensagem, args=(nome, sala, client))
+    room = client.recv(1024).decode()
+    name = client.recv(1024).decode()
+    if room not in roooms.keys():
+        roooms[room] = []
+    roooms[room].append(client)
+    print(f'{name} se conectou na sala {room}! INFO {addr}')
+    broadcast(room, f'{name}: Entrou na sala!\n')
+    thread = threading.Thread(target=enviarMensagem, args=(name, room, client))
     thread.start()
